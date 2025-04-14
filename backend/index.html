@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Test</h1>
+    <div id="messages"></div>
+    <button id="sendMessage">Send Message</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <script>
+        // WebSocket URL based on your Spring Boot endpoint
+        var socket = new SockJS('http://localhost:8080/ws');
+        var stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            // Subscribe to the topic to receive messages
+            stompClient.subscribe('/topic/messages', function (messageOutput) {
+                // Display the message in the "messages" div
+                var messageDiv = document.getElementById('messages');
+                var newMessage = document.createElement('p');
+                newMessage.textContent = messageOutput.body;
+                messageDiv.appendChild(newMessage);
+            });
+        });
+
+        // Send a message when the button is clicked
+        document.getElementById('sendMessage').onclick = function () {
+            stompClient.send('/app/send', {}, JSON.stringify({
+                senderId: 'sender123', // Example senderId, replace with real ID
+                receiverId: 'receiver123', // Example receiverId, replace with real ID
+                content: 'Hello from WebSocket Test'
+            }));
+        };
+    </script>
+</body>
+</html>
